@@ -489,7 +489,7 @@ REAL_PATTERNS = {
 }
 
 # ================================================================
-# BERT MODEL LOADING (Moved BEFORE sidebar usage)
+# BERT MODEL LOADING
 # ================================================================
 
 @st.cache_resource(show_spinner="Loading BERT model...")
