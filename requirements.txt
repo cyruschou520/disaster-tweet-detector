@@ -8,6 +8,6 @@ numpy>=1.24.0
 # Firebase for real-time database
 firebase-admin>=6.0.0
 
-# BERT dependencies (optional - app will work without them)
+# BERT dependencies (optional backup)
 torch>=2.0.0
 transformers>=4.30.0
