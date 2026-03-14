@@ -3,8 +3,11 @@ streamlit>=1.28.0
 pandas>=2.0.0
 requests>=2.31.0
 plotly>=5.17.0
+numpy>=1.24.0
 
-# BERT dependencies (optional - will fallback if not available)
+# Firebase for real-time database
+firebase-admin>=6.0.0
+
+# BERT dependencies (optional - app will work without them)
 torch>=2.0.0
 transformers>=4.30.0
-firebase-admin>=6.0.0
