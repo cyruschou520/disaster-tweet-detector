@@ -1,0 +1,106 @@
+[
+  {
+    "timestamp": "2026-03-13 00:39:29",
+    "tweet": "URGENT! Worst flood EVER in Kampar! Thousands dead! Share!",
+    "location": "Kampar",
+    "api_district": "Kampar",
+    "state": "Perak",
+    "loc_source": "Auto-detected",
+    "is_fake": true,
+    "confidence": 0.5740695714950561,
+    "fake_news_reasons": [
+      "\u2022 High Urgency: Found 'urgent'"
+    ],
+    "weather_verified": false,
+    "weather_confidence": 0.3,
+    "weather_details": "Tweet contradicts official weather forecast",
+    "weather_data": {
+      "location": "Kampar",
+      "date": "2026-03-18",
+      "forecast": "Ribut petir di beberapa tempat",
+      "morning_forecast": "Tiada hujan",
+      "afternoon_forecast": "Ribut petir di beberapa tempat",
+      "night_forecast": "Hujan di beberapa tempat",
+      "summary_when": "Petang",
+      "temperature": 29.0,
+      "min_temp": 23,
+      "max_temp": 35
+    },
+    "location_data": {
+      "lat": 4.30066,
+      "lon": 101.1614462,
+      "display_name": "Kampar, Perak, 31900, Malaysia",
+      "boundingbox": [
+        "4.2606600",
+        "4.3406600",
+        "101.1214462",
+        "101.2014462"
+      ],
+      "importance": 0.46941335479294094,
+      "type": "town",
+      "address": {
+        "town": "Kampar",
+        "district": "Kampar",
+        "state": "Perak",
+        "ISO3166-2-lvl4": "MY-08",
+        "postcode": "31900",
+        "country": "Malaysia",
+        "country_code": "my"
+      },
+      "licence": "Data \u00a9 OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright"
+    },
+    "analysis_date": "2026-03-13"
+  },
+  {
+    "timestamp": "2026-03-13 00:39:55",
+    "tweet": "Heavy rain in Kampar causing flash floods - reported by local authorities",
+    "location": "Kampar",
+    "api_district": "Kampar",
+    "state": "Perak",
+    "loc_source": "Auto-detected",
+    "is_fake": true,
+    "confidence": 0.4995076060295105,
+    "fake_news_reasons": [
+      "\u2022 Official/Source indicators: Found 'reported by'"
+    ],
+    "weather_verified": false,
+    "weather_confidence": 0.3,
+    "weather_details": "Tweet contradicts official weather forecast",
+    "weather_data": {
+      "location": "Kampar",
+      "date": "2026-03-18",
+      "forecast": "Ribut petir di beberapa tempat",
+      "morning_forecast": "Tiada hujan",
+      "afternoon_forecast": "Ribut petir di beberapa tempat",
+      "night_forecast": "Hujan di beberapa tempat",
+      "summary_when": "Petang",
+      "temperature": 29.0,
+      "min_temp": 23,
+      "max_temp": 35
+    },
+    "location_data": {
+      "lat": 4.30066,
+      "lon": 101.1614462,
+      "display_name": "Kampar, Perak, 31900, Malaysia",
+      "boundingbox": [
+        "4.2606600",
+        "4.3406600",
+        "101.1214462",
+        "101.2014462"
+      ],
+      "importance": 0.46941335479294094,
+      "type": "town",
+      "address": {
+        "town": "Kampar",
+        "district": "Kampar",
+        "state": "Perak",
+        "ISO3166-2-lvl4": "MY-08",
+        "postcode": "31900",
+        "country": "Malaysia",
+        "country_code": "my"
+      },
+      "licence": "Data \u00a9 OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright"
+    },
+    "analysis_date": "2026-03-13"
+  }
+]

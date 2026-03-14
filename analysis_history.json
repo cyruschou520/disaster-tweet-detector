@@ -1,0 +1,289 @@
+[
+  {
+    "timestamp": "2026-03-11 23:58:12",
+    "tweet": "heavy rain in Kampar",
+    "location": "Kampar",
+    "api_district": "Kampar",
+    "state": "Perak",
+    "loc_source": "Auto-detected",
+    "disaster_detected": true,
+    "confidence": 99.82,
+    "verification": "POSSIBLE",
+    "weather_forecast": "Ribut petir di beberapa tempat"
+  },
+  {
+    "timestamp": "2026-03-12 00:29:32",
+    "tweet": "floods will happen at Kampar",
+    "location": "Kampar",
+    "api_district": "Kampar",
+    "state": "Perak",
+    "loc_source": "Auto-detected",
+    "disaster_detected": true,
+    "confidence": 99.63,
+    "verification": "POSSIBLE",
+    "weather_forecast": "Ribut petir di beberapa tempat"
+  },
+  {
+    "timestamp": "2026-03-12 00:30:38",
+    "tweet": "Rainbow will happen at Kampar",
+    "location": "Kampar",
+    "api_district": "Kampar",
+    "state": "Perak",
+    "loc_source": "Auto-detected",
+    "disaster_detected": false,
+    "confidence": 99.88,
+    "verification": "NORMAL",
+    "weather_forecast": "Ribut petir di beberapa tempat"
+  },
+  {
+    "timestamp": "2026-03-12 00:32:07",
+    "tweet": "strong winds in Johor",
+    "location": "Johor Bahru",
+    "api_district": "Johor Bahru",
+    "state": "Johor",
+    "loc_source": "Auto-detected",
+    "disaster_detected": true,
+    "confidence": 99.73,
+    "verification": "POSSIBLE",
+    "weather_forecast": "Ribut petir di beberapa tempat"
+  },
+  {
+    "timestamp": "2026-03-12 00:32:59",
+    "tweet": "Tanah runtuh dilaporkan di Ipoh",
+    "location": "Ipoh",
+    "api_district": "Kinta",
+    "state": "Perak",
+    "loc_source": "Auto-detected",
+    "disaster_detected": true,
+    "confidence": 99.69,
+    "verification": "POSSIBLE",
+    "weather_forecast": "Ribut petir di beberapa tempat"
+  },
+  {
+    "timestamp": "2026-03-12 00:42:00",
+    "tweet": "Heavy rain in Ipoh",
+    "location": "Ipoh",
+    "api_district": "Kinta",
+    "state": "Perak",
+    "loc_source": "Auto-detected",
+    "disaster_detected": true,
+    "confidence": 99.31,
+    "verification": "POSSIBLE",
+    "weather_forecast": "Ribut petir di beberapa tempat",
+    "weather_data": {
+      "location": "Kinta",
+      "date": "2026-03-17",
+      "forecast": "Ribut petir di beberapa tempat",
+      "morning_forecast": "Tiada hujan",
+      "afternoon_forecast": "Ribut petir di beberapa tempat",
+      "night_forecast": "Hujan di beberapa tempat",
+      "summary_when": "Petang",
+      "temperature": 29.0,
+      "min_temp": 23,
+      "max_temp": 35
+    },
+    "location_data": {
+      "lat": 4.5986817,
+      "lon": 101.0900236,
+      "display_name": "Majlis Bandaraya Ipoh, Kinta, Perak, Malaysia",
+      "boundingbox": [
+        "4.5125369",
+        "4.7840614",
+        "100.9973945",
+        "101.3654305"
+      ],
+      "importance": 0.5658922939437254,
+      "type": "administrative",
+      "address": {
+        "city": "Majlis Bandaraya Ipoh",
+        "district": "Kinta",
+        "state": "Perak",
+        "ISO3166-2-lvl4": "MY-08",
+        "country": "Malaysia",
+        "country_code": "my"
+      },
+      "licence": "Data \u00a9 OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright"
+    },
+    "analysis_date": "2026-03-12"
+  },
+  {
+    "timestamp": "2026-03-12 01:47:40",
+    "tweet": "got rain at Melaka",
+    "location": "Melaka",
+    "api_district": "Melaka",
+    "state": "Melaka",
+    "loc_source": "Auto-detected",
+    "disaster_detected": false,
+    "confidence": 99.93,
+    "verification": "NORMAL",
+    "weather_forecast": "Tiada hujan",
+    "weather_data": {
+      "location": "Melaka",
+      "date": "2026-03-17",
+      "forecast": "Tiada hujan",
+      "morning_forecast": "Tiada hujan",
+      "afternoon_forecast": "Tiada hujan",
+      "night_forecast": "Tiada hujan",
+      "summary_when": "Sepanjang Hari",
+      "temperature": 28.0,
+      "min_temp": 23,
+      "max_temp": 33
+    },
+    "location_data": {
+      "lat": 2.3293744,
+      "lon": 102.2880962,
+      "display_name": "Melaka, Malaysia",
+      "boundingbox": [
+        "1.8395347",
+        "2.4990483",
+        "101.8327984",
+        "102.5943828"
+      ],
+      "importance": 0.6088571901797422,
+      "type": "administrative",
+      "address": {
+        "state": "Melaka",
+        "ISO3166-2-lvl4": "MY-04",
+        "country": "Malaysia",
+        "country_code": "my"
+      },
+      "licence": "Data \u00a9 OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright"
+    },
+    "analysis_date": "2026-03-12"
+  },
+  {
+    "timestamp": "2026-03-12 01:47:43",
+    "tweet": "got rain at Melaka",
+    "location": "Melaka",
+    "api_district": "Melaka",
+    "state": "Melaka",
+    "loc_source": "Auto-detected",
+    "disaster_detected": false,
+    "confidence": 99.93,
+    "verification": "NORMAL",
+    "weather_forecast": "Tiada hujan",
+    "weather_data": {
+      "location": "Melaka",
+      "date": "2026-03-17",
+      "forecast": "Tiada hujan",
+      "morning_forecast": "Tiada hujan",
+      "afternoon_forecast": "Tiada hujan",
+      "night_forecast": "Tiada hujan",
+      "summary_when": "Sepanjang Hari",
+      "temperature": 28.0,
+      "min_temp": 23,
+      "max_temp": 33
+    },
+    "location_data": {
+      "lat": 2.3293744,
+      "lon": 102.2880962,
+      "display_name": "Melaka, Malaysia",
+      "boundingbox": [
+        "1.8395347",
+        "2.4990483",
+        "101.8327984",
+        "102.5943828"
+      ],
+      "importance": 0.6088571901797422,
+      "type": "administrative",
+      "address": {
+        "state": "Melaka",
+        "ISO3166-2-lvl4": "MY-04",
+        "country": "Malaysia",
+        "country_code": "my"
+      },
+      "licence": "Data \u00a9 OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright"
+    },
+    "analysis_date": "2026-03-12"
+  },
+  {
+    "timestamp": "2026-03-12 01:48:20",
+    "tweet": "got fire at Melaka",
+    "location": "Melaka",
+    "api_district": "Melaka",
+    "state": "Melaka",
+    "loc_source": "Auto-detected",
+    "disaster_detected": false,
+    "confidence": 99.76,
+    "verification": "NORMAL",
+    "weather_forecast": "Tiada hujan",
+    "weather_data": {
+      "location": "Melaka",
+      "date": "2026-03-17",
+      "forecast": "Tiada hujan",
+      "morning_forecast": "Tiada hujan",
+      "afternoon_forecast": "Tiada hujan",
+      "night_forecast": "Tiada hujan",
+      "summary_when": "Sepanjang Hari",
+      "temperature": 28.0,
+      "min_temp": 23,
+      "max_temp": 33
+    },
+    "location_data": {
+      "lat": 2.3293744,
+      "lon": 102.2880962,
+      "display_name": "Melaka, Malaysia",
+      "boundingbox": [
+        "1.8395347",
+        "2.4990483",
+        "101.8327984",
+        "102.5943828"
+      ],
+      "importance": 0.6088571901797422,
+      "type": "administrative",
+      "address": {
+        "state": "Melaka",
+        "ISO3166-2-lvl4": "MY-04",
+        "country": "Malaysia",
+        "country_code": "my"
+      },
+      "licence": "Data \u00a9 OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright"
+    },
+    "analysis_date": "2026-03-12"
+  },
+  {
+    "timestamp": "2026-03-12 01:49:51",
+    "tweet": "got landslide at Penang",
+    "location": "Penang",
+    "api_district": "Timur Laut",
+    "state": "Unknown",
+    "loc_source": "Auto-detected",
+    "disaster_detected": true,
+    "confidence": 99.28,
+    "verification": "POSSIBLE",
+    "weather_forecast": "Ribut petir di beberapa tempat",
+    "weather_data": {
+      "location": "Timur Laut",
+      "date": "2026-03-17",
+      "forecast": "Ribut petir di beberapa tempat",
+      "morning_forecast": "Tiada hujan",
+      "afternoon_forecast": "Ribut petir di beberapa tempat",
+      "night_forecast": "Tiada hujan",
+      "summary_when": "Petang",
+      "temperature": 30.0,
+      "min_temp": 26,
+      "max_temp": 34
+    },
+    "location_data": {
+      "lat": 5.4065013,
+      "lon": 100.2559077,
+      "display_name": "Pulau Pinang, Malaysia",
+      "boundingbox": [
+        "5.1220035",
+        "5.5856779",
+        "100.1749755",
+        "100.5503059"
+      ],
+      "importance": 0.6405098236669253,
+      "type": "administrative",
+      "address": {
+        "state": "Pulau Pinang",
+        "ISO3166-2-lvl4": "MY-07",
+        "country": "Malaysia",
+        "country_code": "my"
+      },
+      "licence": "Data \u00a9 OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright"
+    },
+    "analysis_date": "2026-03-12"
+  }
+]
