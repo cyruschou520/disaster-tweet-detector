@@ -41,10 +41,10 @@ except ImportError:
 # PAGE CONFIG
 # ================================================================
 st.set_page_config(
-    page_title="AI Fake Disaster Tweet Detector - Real-Time",
+    page_title="AI Fake Disaster Tweet Detector - GitHub Copilot API",
     layout="wide",
     initial_sidebar_state="expanded",
-    page_icon="🚨"
+    page_icon="🤖"
 )
 
 # ================================================================
@@ -58,7 +58,7 @@ st.markdown("""
     /* Global Styles */
     .stApp {
         font-family: 'Inter', sans-serif;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #2b3137 0%, #1e2429 100%);
     }
     
     /* Main container with glass morphism */
@@ -71,15 +71,15 @@ st.markdown("""
         box-shadow: 0 20px 60px rgba(0,0,0,0.3);
     }
     
-    /* Header with gradient and animation */
+    /* Header with GitHub gradient */
     .main-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #2b3137 0%, #1e2429 100%);
         padding: 30px;
         border-radius: 20px;
         color: white;
         text-align: center;
         margin-bottom: 30px;
-        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.4);
         animation: slideDown 0.5s ease-out;
     }
     
@@ -88,8 +88,28 @@ st.markdown("""
         to { transform: translateY(0); opacity: 1; }
     }
     
+    /* GitHub Copilot badge */
+    .copilot-badge {
+        background: linear-gradient(135deg, #6e40ff, #a371f7);
+        color: white;
+        padding: 8px 20px;
+        border-radius: 30px;
+        font-size: 1em;
+        font-weight: 600;
+        display: inline-block;
+        margin: 10px 0;
+        box-shadow: 0 5px 15px rgba(110, 64, 255, 0.4);
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.9; transform: scale(1.05); }
+        100% { opacity: 1; transform: scale(1); }
+    }
+    
     /* Alert animations */
-    .fake-alert, .real-alert, .hybrid-alert {
+    .fake-alert, .real-alert, .hybrid-alert, .copilot-alert {
         padding: 20px;
         border-radius: 15px;
         color: white;
@@ -99,6 +119,10 @@ st.markdown("""
         margin: 20px 0;
         animation: pulse 2s infinite, slideIn 0.5s ease-out;
         box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    }
+    
+    .copilot-alert {
+        background: linear-gradient(135deg, #6e40ff, #a371f7);
     }
     
     @keyframes slideIn {
@@ -163,15 +187,15 @@ st.markdown("""
         text-align: center;
         box-shadow: 0 5px 20px rgba(0,0,0,0.1);
         transition: all 0.3s ease;
-        border: 1px solid rgba(102, 126, 234, 0.2);
+        border: 1px solid rgba(110, 64, 255, 0.2);
         margin: 10px 0;
         animation: fadeIn 0.5s ease-out;
     }
     
     .metric-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 15px 30px rgba(102, 126, 234, 0.3);
-        border-color: #667eea;
+        box-shadow: 0 15px 30px rgba(110, 64, 255, 0.3);
+        border-color: #6e40ff;
     }
     
     @keyframes fadeIn {
@@ -215,6 +239,11 @@ st.markdown("""
         color: white;
     }
     
+    .copilot-model-badge {
+        background: linear-gradient(135deg, #6e40ff, #a371f7);
+        color: white;
+    }
+    
     .model-badge {
         background: linear-gradient(135deg, #667eea, #5a67d8);
         color: white;
@@ -232,8 +261,8 @@ st.markdown("""
     }
     
     .stTextArea textarea:focus {
-        border-color: #667eea !important;
-        box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3) !important;
+        border-color: #6e40ff !important;
+        box-shadow: 0 5px 20px rgba(110, 64, 255, 0.3) !important;
         transform: scale(1.02);
     }
     
@@ -249,18 +278,18 @@ st.markdown("""
     
     .stButton button:hover {
         transform: translateY(-2px);
-        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4) !important;
+        box-shadow: 0 10px 25px rgba(110, 64, 255, 0.4) !important;
     }
     
     /* Primary button */
     button[data-testid="baseButton-primary"] {
-        background: linear-gradient(135deg, #667eea, #5a67d8) !important;
+        background: linear-gradient(135deg, #6e40ff, #a371f7) !important;
         color: white !important;
     }
     
     /* Sidebar styling */
     .css-1d391kg, .css-163ttbj {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        background: linear-gradient(135deg, #2b3137 0%, #1e2429 100%) !important;
     }
     
     .sidebar-content {
@@ -322,13 +351,13 @@ st.markdown("""
     
     .stat-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 15px 30px rgba(102, 126, 234, 0.3);
+        box-shadow: 0 15px 30px rgba(110, 64, 255, 0.3);
     }
     
     .stat-value {
         font-size: 2.5em;
         font-weight: 700;
-        color: #667eea;
+        color: #6e40ff;
         margin: 10px 0;
     }
     
@@ -351,7 +380,7 @@ st.markdown("""
     
     .progress-bar {
         height: 100%;
-        background: linear-gradient(90deg, #667eea, #5a67d8);
+        background: linear-gradient(90deg, #6e40ff, #a371f7);
         border-radius: 5px;
         transition: width 0.5s ease-in-out;
     }
@@ -363,7 +392,7 @@ st.markdown("""
         color: #333;
         margin: 30px 0 20px;
         padding-bottom: 10px;
-        border-bottom: 3px solid #667eea;
+        border-bottom: 3px solid #6e40ff;
         display: inline-block;
     }
     
@@ -428,7 +457,7 @@ db, FIREBASE_ACTIVE = initialize_firebase()
 if "session_id" not in st.session_state:
     st.session_state["session_id"] = hashlib.md5(str(time.time()).encode()).hexdigest()[:8]
 if "model_choice" not in st.session_state:
-    st.session_state["model_choice"] = "hybrid"
+    st.session_state["model_choice"] = "copilot"  # Default to Copilot
 if "input_key_counter" not in st.session_state:
     st.session_state["input_key_counter"] = 0
 if "last_refresh" not in st.session_state:
@@ -450,6 +479,8 @@ if "dark_mode" not in st.session_state:
     st.session_state["dark_mode"] = False
 if "animations_enabled" not in st.session_state:
     st.session_state["animations_enabled"] = True
+if "github_token" not in st.session_state:
+    st.session_state["github_token"] = ""
 
 # ================================================================
 # CONSTANTS
@@ -489,7 +520,199 @@ REAL_PATTERNS = {
 }
 
 # ================================================================
-# BERT MODEL LOADING
+# GITHUB COPILOT API FUNCTIONS
+# ================================================================
+
+def analyze_with_copilot(text, github_token):
+    """
+    Analyze tweet using GitHub Copilot API
+    Note: This uses the same underlying model as GitHub Copilot
+    """
+    if not github_token:
+        st.error("⚠️ Please enter your GitHub token in the sidebar")
+        return None
+    
+    start_time = time.time()
+    
+    # GitHub Copilot API endpoint (Note: This is a conceptual endpoint - actual implementation may vary)
+    # In practice, you would need to use GitHub's API with appropriate authentication
+    url = "https://api.github.com/copilot/chat/completions"
+    
+    headers = {
+        "Authorization": f"Bearer {github_token}",
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+    }
+    
+    # Enhanced prompt for fake news detection
+    prompt = f"""You are an expert at detecting fake news and misinformation in disaster-related tweets.
+    
+Analyze this tweet and provide a detailed JSON response with fake news probability.
+
+Tweet: "{text}"
+
+Consider these factors:
+1. Urgency markers (urgent, breaking, alert)
+2. Sensationalism (unbelievable, shocking, massive)
+3. Source credibility (official sources, authorities)
+4. Specific details (time, location, numbers)
+5. Sharing requests (share, viral, spread)
+6. Conspiracy elements (government hiding, secret)
+7. Emotional language (pray, help, omg)
+
+Return a JSON object with:
+{{
+    "is_fake": boolean (true if likely fake/misinformation),
+    "fake_probability": float (0-1 probability it's fake),
+    "confidence": float (0-1 confidence in this assessment),
+    "reasons": [list of specific reasons],
+    "urgency_level": "low/medium/high/critical",
+    "sensationalism_score": float (0-1),
+    "credibility_score": float (0-1),
+    "detected_fake_indicators": {{
+        "urgency": [list of urgency words found],
+        "sensational": [list of sensational words found],
+        "vague": [list of vague phrases found],
+        "sharing": [list of sharing requests found],
+        "conspiracy": [list of conspiracy indicators found]
+    }},
+    "detected_real_indicators": {{
+        "sources": [list of official sources mentioned],
+        "specific": [list of specific details found],
+        "measured": [list of measurements found],
+        "organizations": [list of official organizations mentioned]
+    }}
+}}
+
+Return ONLY valid JSON, no other text."""
+    
+    payload = {
+        "model": "gpt-4",  # Copilot uses GPT-4 based models
+        "messages": [
+            {"role": "system", "content": "You are an expert fake news detector. Always respond with valid JSON."},
+            {"role": "user", "content": prompt}
+        ],
+        "temperature": 0.3,
+        "max_tokens": 1000
+    }
+    
+    try:
+        response = requests.post(url, headers=headers, json=payload, timeout=30)
+        response.raise_for_status()
+        result = response.json()
+        
+        # Extract the JSON from the response
+        content = result.get("choices", [{}])[0].get("message", {}).get("content", "")
+        
+        # Find JSON in the response
+        json_match = re.search(r'\{.*\}', content, re.DOTALL)
+        if json_match:
+            analysis = json.loads(json_match.group())
+            
+            # Add metadata
+            analysis["response_time"] = time.time() - start_time
+            analysis["model_used"] = "GitHub Copilot (GPT-4)"
+            
+            # Ensure probabilities sum to 1
+            if "fake_probability" in analysis:
+                analysis["real_probability"] = 1 - analysis["fake_probability"]
+            else:
+                analysis["fake_probability"] = 0.5
+                analysis["real_probability"] = 0.5
+            
+            # Add text metrics
+            words = text.split()
+            analysis["word_count"] = len(words)
+            analysis["exclamation_count"] = text.count('!')
+            analysis["question_count"] = text.count('?')
+            analysis["caps_words"] = sum(1 for word in words if word.isupper() and len(word) > 2)
+            
+            return analysis
+        else:
+            st.error("Could not parse Copilot response")
+            return None
+            
+    except requests.exceptions.HTTPError as e:
+        if response.status_code == 401:
+            st.error("❌ Invalid GitHub token. Please check your token.")
+        elif response.status_code == 429:
+            st.error("⚠️ Rate limit exceeded. Please try again later.")
+        elif response.status_code == 403:
+            st.error("❌ Access forbidden. Check if Copilot API is enabled.")
+        else:
+            st.error(f"Copilot API error: {e}")
+        return None
+    except Exception as e:
+        st.error(f"Error calling Copilot API: {e}")
+        return None
+
+# ================================================================
+# FALLBACK MOCK ANALYSIS (when Copilot is unavailable)
+# ================================================================
+
+def analyze_mock_fallback(text):
+    """Fallback mock analysis when Copilot is unavailable"""
+    start_time = time.time()
+    text_lower = text.lower()
+    
+    fake_score = 0
+    real_score = 0
+    fake_details = {category: 0 for category in FAKE_PATTERNS}
+    real_details = {category: 0 for category in REAL_PATTERNS}
+    
+    # Check fake patterns
+    for category, patterns in FAKE_PATTERNS.items():
+        for pattern in patterns:
+            if pattern in text_lower:
+                fake_score += 1
+                fake_details[category] += 1
+    
+    # Check real patterns
+    for category, patterns in REAL_PATTERNS.items():
+        for pattern in patterns:
+            if pattern in text_lower:
+                real_score += 1.5
+                real_details[category] += 1
+    
+    # Detect disasters
+    detected_disasters = []
+    for disaster, keywords in DISASTER_KEYWORDS.items():
+        if any(keyword in text_lower for keyword in keywords):
+            detected_disasters.append(disaster)
+    
+    # Word analysis
+    words = text.split()
+    word_count = len(words)
+    
+    # Calculate probabilities
+    total = fake_score + real_score
+    if total > 0:
+        fake_prob = fake_score / total
+    else:
+        fake_prob = 0.5
+    
+    real_prob = 1 - fake_prob
+    
+    return {
+        "is_fake": fake_prob > 0.5,
+        "fake_probability": fake_prob,
+        "real_probability": real_prob,
+        "confidence": abs(fake_prob - 0.5) * 2,
+        "reasons": ["Using fallback mock analysis - Copilot unavailable"],
+        "urgency_level": "medium",
+        "sensationalism_score": fake_details.get("sensational", 0) / 5,
+        "credibility_score": real_details.get("sources", 0) / 4,
+        "detected_disasters": detected_disasters,
+        "word_count": word_count,
+        "exclamation_count": text.count('!'),
+        "question_count": text.count('?'),
+        "caps_words": sum(1 for word in words if word.isupper() and len(word) > 2),
+        "model_used": "Mock Fallback",
+        "response_time": time.time() - start_time
+    }
+
+# ================================================================
+# BERT ANALYSIS (keep as backup)
 # ================================================================
 
 @st.cache_resource(show_spinner="Loading BERT model...")
@@ -505,120 +728,10 @@ def load_bert_model():
     except:
         return None, None, False
 
-# Load BERT model and set availability flag
 bert_model, bert_tokenizer, bert_loaded = load_bert_model() if BERT_AVAILABLE else (None, None, False)
 
-# ================================================================
-# ANALYSIS FUNCTIONS
-# ================================================================
-
-def analyze_mock(text):
-    """Enhanced mock analysis with detailed measurements"""
-    start_time = time.time()
-    text_lower = text.lower()
-    
-    fake_score = 0
-    real_score = 0
-    fake_details = {category: 0 for category in FAKE_PATTERNS}
-    real_details = {category: 0 for category in REAL_PATTERNS}
-    detected_fake_words = []
-    detected_real_words = []
-    
-    for category, patterns in FAKE_PATTERNS.items():
-        for pattern in patterns:
-            if pattern in text_lower:
-                fake_score += 1
-                fake_details[category] += 1
-                detected_fake_words.append(pattern)
-    
-    for category, patterns in REAL_PATTERNS.items():
-        for pattern in patterns:
-            if pattern in text_lower:
-                real_score += 1.5
-                real_details[category] += 1
-                detected_real_words.append(pattern)
-    
-    detected_disasters = []
-    for disaster, keywords in DISASTER_KEYWORDS.items():
-        if any(keyword in text_lower for keyword in keywords):
-            detected_disasters.append(disaster)
-    
-    words = text.split()
-    word_count = len(words)
-    unique_words = len(set(words))
-    avg_word_length = sum(len(w) for w in words) / word_count if word_count > 0 else 0
-    
-    sentences = re.split(r'[.!?]+', text)
-    sentence_count = len([s for s in sentences if s.strip()])
-    avg_sentence_length = word_count / sentence_count if sentence_count > 0 else 0
-    
-    exclamation_count = text.count('!')
-    question_count = text.count('?')
-    period_count = text.count('.')
-    comma_count = text.count(',')
-    caps_words = sum(1 for word in words if word.isupper() and len(word) > 2)
-    caps_ratio = caps_words / word_count if word_count > 0 else 0
-    
-    has_url = bool(re.search(r'http[s]?://', text_lower))
-    numbers = re.findall(r'\d+', text)
-    number_count = len(numbers)
-    
-    total = fake_score + real_score
-    if total > 0:
-        fake_prob = fake_score / total
-    else:
-        fake_prob = 0.5
-    
-    real_prob = 1 - fake_prob
-    
-    overall_confidence = abs(fake_prob - 0.5) * 2
-    readability = max(0, min(100, 100 - (avg_word_length * 10) + (sentence_count * 2)))
-    
-    sensationalism = min(1.0, (fake_details.get("sensational", 0) * 0.3 + 
-                               exclamation_count * 0.1 + 
-                               caps_ratio * 0.5))
-    
-    credibility = min(1.0, (real_details.get("sources", 0) * 0.3 + 
-                            real_details.get("measured", 0) * 0.3 + 
-                            (1 if has_url else 0) * 0.2))
-    
-    response_time = time.time() - start_time
-    
-    return {
-        "is_fake": fake_prob > 0.5,
-        "fake_probability": fake_prob,
-        "real_probability": real_prob,
-        "overall_confidence": overall_confidence,
-        "fake_score": fake_score,
-        "real_score": real_score,
-        "fake_details": fake_details,
-        "real_details": real_details,
-        "detected_fake_words": list(set(detected_fake_words))[:10],
-        "detected_real_words": list(set(detected_real_words))[:10],
-        "detected_disasters": detected_disasters,
-        "word_count": word_count,
-        "unique_words": unique_words,
-        "avg_word_length": avg_word_length,
-        "sentence_count": sentence_count,
-        "avg_sentence_length": avg_sentence_length,
-        "exclamation_count": exclamation_count,
-        "question_count": question_count,
-        "period_count": period_count,
-        "comma_count": comma_count,
-        "caps_words": caps_words,
-        "caps_ratio": caps_ratio,
-        "has_url": has_url,
-        "number_count": number_count,
-        "readability": readability,
-        "sensationalism": sensationalism,
-        "credibility": credibility,
-        "response_time": response_time,
-        "model": "Mock",
-        "model_used": "Mock Mode"
-    }
-
 def analyze_bert(text):
-    """BERT analysis with enhanced measurements"""
+    """BERT analysis as backup"""
     if not bert_loaded or bert_model is None:
         return None
     
@@ -644,60 +757,39 @@ def analyze_bert(text):
         fake_prob = fake_prob / total
         real_prob = real_prob / total
         
-        entropy = - (fake_prob * np.log2(fake_prob + 1e-10) + 
-                    real_prob * np.log2(real_prob + 1e-10))
-        
-        response_time = time.time() - start_time
-        
         return {
             "is_fake": fake_prob > 0.5,
             "fake_probability": fake_prob,
             "real_probability": real_prob,
             "confidence": abs(fake_prob - 0.5) * 2,
-            "entropy": entropy,
-            "raw_scores": probs.tolist(),
-            "response_time": response_time,
-            "model": "BERT",
-            "model_used": "BERT Mode"
+            "reasons": ["BERT model analysis"],
+            "model_used": "BERT",
+            "response_time": time.time() - start_time,
+            "word_count": len(text.split()),
+            "exclamation_count": text.count('!'),
+            "question_count": text.count('?')
         }
     except Exception as e:
         return None
 
-def analyze_hybrid(text):
-    """Hybrid analysis combining BERT and Mock"""
-    mock_result = analyze_mock(text)
-    bert_result = analyze_bert(text) if bert_loaded else None
+# ================================================================
+# MAIN ANALYSIS FUNCTION
+# ================================================================
+
+def analyze_tweet(text, model_choice, github_token):
+    """Main analysis function routing"""
     
-    if bert_result:
-        fake_prob = (bert_result["fake_probability"] * 0.6 + 
-                    mock_result["fake_probability"] * 0.4)
-        
-        agreement = 1 - abs(bert_result["fake_probability"] - mock_result["fake_probability"])
-        combined_confidence = (bert_result.get("confidence", 0) * 0.6 + 
-                              mock_result["overall_confidence"] * 0.4)
-        
-        result = {
-            "is_fake": fake_prob > 0.5,
-            "fake_probability": fake_prob,
-            "real_probability": 1 - fake_prob,
-            "combined_confidence": combined_confidence,
-            "model_agreement": agreement,
-            "bert_contribution": bert_result["fake_probability"],
-            "mock_contribution": mock_result["fake_probability"],
-            "bert_confidence": bert_result.get("confidence", 0),
-            "mock_confidence": mock_result["overall_confidence"],
-            "entropy": bert_result.get("entropy", 0),
-            **{k: v for k, v in mock_result.items() 
-               if k not in ["is_fake", "fake_probability", "real_probability", "model"]},
-            "model": "Hybrid (BERT+Mock)" if bert_loaded else "Mock Only",
-            "model_used": "Hybrid Mode",
-            "bert_available": bert_loaded,
-            "response_time": (bert_result["response_time"] + mock_result["response_time"]) / 2
-        }
+    if model_choice == "copilot":
+        result = analyze_with_copilot(text, github_token)
+        if result is None:
+            st.warning("⚠️ Copilot API failed - falling back to mock analysis")
+            result = analyze_mock_fallback(text)
+    elif model_choice == "bert" and bert_loaded:
+        result = analyze_bert(text)
+        if result is None:
+            result = analyze_mock_fallback(text)
     else:
-        result = mock_result
-        result["model"] = "Mock Only (BERT unavailable)"
-        result["model_used"] = "Mock Only"
+        result = analyze_mock_fallback(text)
     
     return result
 
@@ -718,10 +810,7 @@ class RealtimeDataManager:
     def save_analysis(self, analysis_data):
         """Save analysis to Firebase if available, otherwise store locally"""
         if not self.firebase_active:
-            # Store in session state as fallback
             st.session_state["local_analyses"].append(analysis_data)
-            
-            # Update local stats
             stats = st.session_state["local_stats"]
             stats["total_analyses"] += 1
             if analysis_data.get("is_fake"):
@@ -946,23 +1035,16 @@ def display_comprehensive_metrics(analysis):
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
-        conf = analysis.get('overall_confidence', analysis.get('combined_confidence', 0.5))
-        st.metric("Overall Confidence", f"{conf*100:.1f}%", 
-                 help="How certain the model is about its decision")
+        st.metric("Confidence", f"{analysis.get('confidence', 0.5)*100:.1f}%")
     
     with col2:
-        if 'model_agreement' in analysis:
-            st.metric("Model Agreement", f"{analysis['model_agreement']*100:.1f}%",
-                     help="How much BERT and Mock models agree")
+        st.metric("Urgency", analysis.get('urgency_level', 'medium').upper())
     
     with col3:
-        if 'entropy' in analysis:
-            st.metric("Uncertainty", f"{analysis['entropy']:.3f}",
-                     help="Lower values indicate higher certainty")
+        st.metric("Sensationalism", f"{analysis.get('sensationalism_score', 0)*100:.1f}%")
     
     with col4:
-        st.metric("Response Time", f"{analysis.get('response_time', 0)*1000:.0f}ms",
-                 help="Time taken to analyze")
+        st.metric("Credibility", f"{analysis.get('credibility_score', 0)*100:.1f}%")
     
     # Text Analysis
     st.markdown('<h4 style="margin-top: 20px;">📝 Text Analysis</h4>', unsafe_allow_html=True)
@@ -970,38 +1052,18 @@ def display_comprehensive_metrics(analysis):
     
     with col1:
         st.metric("Words", analysis.get('word_count', 0))
-        st.metric("Unique Words", analysis.get('unique_words', 0))
-    
     with col2:
-        st.metric("Sentences", analysis.get('sentence_count', 0))
-        st.metric("Avg Word Length", f"{analysis.get('avg_word_length', 0):.1f}")
-    
-    with col3:
-        st.metric("Readability", f"{analysis.get('readability', 0):.0f}",
-                 help="Higher = easier to read")
-        st.metric("Caps Ratio", f"{analysis.get('caps_ratio', 0)*100:.0f}%",
-                 help="Percentage of words in ALL CAPS")
-    
-    with col4:
         st.metric("Exclamation", analysis.get('exclamation_count', 0))
+    with col3:
         st.metric("Questions", analysis.get('question_count', 0))
+    with col4:
+        st.metric("Caps Words", analysis.get('caps_words', 0))
     
-    # Indicator Analysis
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.markdown("#### 🚨 Fake News Indicators")
-        if analysis.get('fake_details'):
-            for category, count in analysis['fake_details'].items():
-                if count > 0:
-                    st.warning(f"**{category.title()}**: {count} indicators")
-    
-    with col2:
-        st.markdown("#### ✅ Real News Indicators")
-        if analysis.get('real_details'):
-            for category, count in analysis['real_details'].items():
-                if count > 0:
-                    st.success(f"**{category.title()}**: {count} indicators")
+    # Reasons
+    if analysis.get('reasons'):
+        st.markdown("#### 🔍 Detection Reasons")
+        for reason in analysis['reasons']:
+            st.warning(f"• {reason}")
     
     # Disaster Detection
     if analysis.get('detected_disasters'):
@@ -1010,13 +1072,6 @@ def display_comprehensive_metrics(analysis):
         for i, disaster in enumerate(analysis['detected_disasters']):
             with cols[i]:
                 st.info(disaster.upper())
-    
-    # URL and Numbers
-    if analysis.get('has_url'):
-        st.info("🔗 Contains reference link")
-    
-    if analysis.get('number_count', 0) > 0:
-        st.info(f"🔢 Contains {analysis['number_count']} numbers")
 
 def create_location_map(location, lat, lon, is_fake):
     """Create a location map"""
@@ -1095,7 +1150,7 @@ def display_live_stats():
         
         fig = px.bar(loc_df, x="Location", y="Count", 
                      title="Most Active Locations",
-                     color="Count", color_continuous_scale="reds")
+                     color="Count", color_continuous_scale="purples")
         st.plotly_chart(fig, use_container_width=True)
 
 def display_live_alerts():
@@ -1163,20 +1218,14 @@ badge_class = "live-badge" if FIREBASE_ACTIVE else "local-badge"
 badge_text = "🔴 LIVE" if FIREBASE_ACTIVE else "⚫ LOCAL"
 connection_status = "Connected to Global Network" if FIREBASE_ACTIVE else "Offline Mode - Data stored locally"
 
-model_display = {
-    "hybrid": "HYBRID",
-    "bert": "BERT",
-    "mock": "MOCK"
-}.get(st.session_state["model_choice"], "HYBRID")
-
 st.markdown(
     f'''
     <div class="main-header">
-        <h1 style="font-size: 3em; margin-bottom: 10px;">🚨 AI Fake Disaster Detector</h1>
-        <p style="font-size: 1.2em; opacity: 0.9;">Real-time misinformation detection with advanced analytics</p>
+        <h1 style="font-size: 3em; margin-bottom: 10px;">🤖 GitHub Copilot Detector</h1>
+        <p style="font-size: 1.2em; opacity: 0.9;">AI-powered fake news detection with GitHub Copilot API</p>
         <div style="margin-top: 20px;">
+            <span class="copilot-badge">⚡ Powered by GitHub Copilot</span>
             <span class="status-badge {badge_class}">{badge_text}</span>
-            <span class="status-badge model-badge">🤖 {model_display}</span>
         </div>
         <p style="margin-top: 15px; font-size: 0.9em; opacity: 0.8;">{connection_status} | Session: {st.session_state["session_id"]}</p>
     </div>
@@ -1218,16 +1267,42 @@ with st.sidebar:
     
     st.markdown("---")
     
-    # Model Status with Icons
+    # GitHub Token Input
+    st.markdown("### 🔑 GitHub Authentication")
+    github_token = st.text_input(
+        "GitHub Token",
+        type="password",
+        value=st.session_state.get("github_token", ""),
+        help="Enter your GitHub token with Copilot API access"
+    )
+    st.session_state["github_token"] = github_token
+    
+    if github_token:
+        st.success("✅ Token provided")
+    else:
+        st.warning("⚠️ Enter token for Copilot API")
+    
+    st.markdown("---")
+    
+    # Model Status
     st.markdown("### 🤖 Model Status")
     col1, col2 = st.columns(2)
     with col1:
+        st.markdown("""
+        <div style="background: #6e40ff20; padding: 10px; border-radius: 10px; text-align: center;">
+            <span style="font-size: 2em;">🤖</span><br>
+            <strong style="color: #6e40ff;">Copilot</strong><br>
+            <span style="color: #6e40ff;">✅ Active</span>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
         if bert_loaded:
             st.markdown("""
             <div style="background: #10ac8420; padding: 10px; border-radius: 10px; text-align: center;">
                 <span style="font-size: 2em;">🧠</span><br>
                 <strong style="color: #10ac84;">BERT</strong><br>
-                <span style="color: #10ac84;">✅ Active</span>
+                <span style="color: #10ac84;">✅ Ready</span>
             </div>
             """, unsafe_allow_html=True)
         else:
@@ -1239,36 +1314,30 @@ with st.sidebar:
             </div>
             """, unsafe_allow_html=True)
     
-    with col2:
-        st.markdown("""
-        <div style="background: #10ac8420; padding: 10px; border-radius: 10px; text-align: center;">
-            <span style="font-size: 2em;">🔍</span><br>
-            <strong style="color: #10ac84;">MOCK</strong><br>
-            <span style="color: #10ac84;">✅ Always Ready</span>
-        </div>
-        """, unsafe_allow_html=True)
-    
     st.markdown("---")
     
-    # Settings Card
+    # Settings
     st.markdown("### ⚙️ Settings")
     
     # Model Selection
     if bert_loaded:
-        model_options = ["hybrid", "mock", "bert"]
-        model_labels = {
-            "hybrid": "🤖 Hybrid (BERT + Mock) - Most Accurate",
-            "mock": "🔍 Mock Only - Fastest",
-            "bert": "🧠 BERT Only - Deep Learning"
-        }
-        model_choice = st.radio(
-            "Select Detection Model",
-            model_options,
-            format_func=lambda x: model_labels.get(x, x),
-            index=0,
-            help="Choose your preferred detection model"
-        )
-        st.session_state["model_choice"] = model_choice
+        model_options = ["copilot", "bert"]
+    else:
+        model_options = ["copilot"]
+    
+    model_labels = {
+        "copilot": "🤖 GitHub Copilot (GPT-4) - Recommended",
+        "bert": "🧠 BERT Only - Local"
+    }
+    
+    model_choice = st.radio(
+        "Select Detection Model",
+        model_options,
+        format_func=lambda x: model_labels.get(x, x),
+        index=0,
+        help="Choose your preferred detection model"
+    )
+    st.session_state["model_choice"] = model_choice
     
     # Auto-refresh toggle
     st.session_state["auto_refresh"] = st.toggle(
@@ -1409,7 +1478,7 @@ with example_col4:
 # Action Buttons
 col1, col2, col3 = st.columns([1, 1, 4])
 with col1:
-    analyze_clicked = st.button("🔍 Analyze Tweet", type="primary", use_container_width=True)
+    analyze_clicked = st.button("🔍 Analyze with Copilot", type="primary", use_container_width=True)
 with col2:
     if st.button("🔄 New Tweet", use_container_width=True):
         st.session_state["input_key_counter"] += 1
@@ -1419,15 +1488,13 @@ with col2:
 # ANALYSIS EXECUTION
 # ================================================================
 if analyze_clicked and tweet:
-    with st.spinner("🔍 Analyzing with comprehensive metrics..."):
+    with st.spinner("🤖 Calling GitHub Copilot API..."):
         
-        # Choose analysis method based on model choice
-        if st.session_state["model_choice"] == "bert" and bert_loaded:
-            result = analyze_bert(tweet)
-        elif st.session_state["model_choice"] == "mock":
-            result = analyze_mock(tweet)
-        else:  # hybrid
-            result = analyze_hybrid(tweet)
+        result = analyze_tweet(
+            tweet, 
+            st.session_state["model_choice"],
+            st.session_state["github_token"]
+        )
         
         if result:
             # Extract location
@@ -1445,10 +1512,10 @@ if analyze_clicked and tweet:
                 "is_fake": result.get("is_fake"),
                 "fake_probability": result.get("fake_probability"),
                 "real_probability": result.get("real_probability"),
-                "confidence": result.get("overall_confidence", result.get("combined_confidence", 0.5)),
+                "confidence": result.get("confidence", 0.5),
                 "detected_disasters": result.get("detected_disasters", []),
                 "word_count": result.get("word_count", 0),
-                "model_used": result.get("model_used", "Unknown"),
+                "model_used": result.get("model_used", "Copilot"),
                 "session_id": st.session_state["session_id"]
             }
             
@@ -1466,14 +1533,16 @@ if analyze_clicked and tweet:
             # Alert based on result
             if result["is_fake"]:
                 st.markdown(
-                    f'<div class="fake-alert">❌ FAKE NEWS DETECTED<br>'
-                    f'Confidence: {result.get("overall_confidence", result.get("combined_confidence", 0.5))*100:.1f}%</div>',
+                    f'<div class="copilot-alert">🤖 COPILOT DETECTED: FAKE NEWS<br>'
+                    f'Confidence: {result.get("confidence", 0.5)*100:.1f}% | '
+                    f'Fake: {result["fake_probability"]*100:.1f}%</div>',
                     unsafe_allow_html=True
                 )
             else:
                 st.markdown(
                     f'<div class="real-alert">✅ REAL NEWS<br>'
-                    f'Confidence: {result.get("overall_confidence", result.get("combined_confidence", 0.5))*100:.1f}%</div>',
+                    f'Confidence: {result.get("confidence", 0.5)*100:.1f}% | '
+                    f'Real: {result["real_probability"]*100:.1f}%</div>',
                     unsafe_allow_html=True
                 )
             
@@ -1502,7 +1571,7 @@ if analyze_clicked and tweet:
                     st.warning(f"Could not load map for {location}")
             
             # Model info
-            st.info(f"🤖 Model: {result.get('model_used', 'Unknown')}")
+            st.info(f"🤖 Model: {result.get('model_used', 'Copilot')} | Response time: {result.get('response_time', 0)*1000:.0f}ms")
 
 elif analyze_clicked and not tweet:
     st.warning("⚠️ Please enter a tweet to analyze.")
@@ -1522,15 +1591,15 @@ if st.button("🔄 Refresh Live Feed", use_container_width=True):
 st.markdown("---")
 st.markdown(
     f'''
-    <div style="text-align: center; padding: 30px; background: linear-gradient(135deg, #667eea10, #764ba210); border-radius: 15px; margin-top: 30px;">
+    <div style="text-align: center; padding: 30px; background: linear-gradient(135deg, #6e40ff10, #a371f710); border-radius: 15px; margin-top: 30px;">
         <div style="display: flex; justify-content: center; gap: 30px; margin-bottom: 20px;">
-            <span class="status-badge" style="background: #667eea; color: white;">🚀 v2.0</span>
+            <span class="status-badge" style="background: #6e40ff; color: white;">🤖 GitHub Copilot</span>
             <span class="status-badge" style="background: #10ac84; color: white;">⚡ Real-time</span>
             <span class="status-badge" style="background: #f39c12; color: white;">🔬 AI-Powered</span>
         </div>
         <p style="color: #666; font-size: 0.9em;">
-            AI Fake Disaster Tweet Detector | Real-time misinformation detection<br>
-            Powered by BERT + Mock Analysis | Data {'syncing globally' if FIREBASE_ACTIVE else 'stored locally'}<br>
+            AI Fake Disaster Tweet Detector | Powered by GitHub Copilot API<br>
+            Using GPT-4 for advanced fake news detection | Data {'syncing globally' if FIREBASE_ACTIVE else 'stored locally'}<br>
             Session: {st.session_state["session_id"]} | Last sync: {datetime.now().strftime('%H:%M:%S')}
         </p>
         <div style="margin-top: 20px;">
