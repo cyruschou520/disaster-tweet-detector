@@ -12,40 +12,20 @@ import plotly.express as px
 import plotly.graph_objects as go
 from collections import deque
 from statistics import mean, stdev
-import firebase_admin
-from firebase_admin import credentials, firestore
 import hashlib
 import threading
 import queue
 
 # ================================================================
-# FIREBASE CONFIGURATION (REAL-TIME DATABASE)
+# FIREBASE IMPORTS (with graceful fallback)
 # ================================================================
 
-# Initialize Firebase if not already initialized
-if not firebase_admin._apps:
-    # For deployment, use environment variables or Streamlit secrets
-    try:
-        # Try to get from Streamlit secrets (for cloud deployment)
-        firebase_config = {
-            "type": st.secrets["firebase"]["type"],
-            "project_id": st.secrets["firebase"]["project_id"],
-            "private_key_id": st.secrets["firebase"]["private_key_id"],
-            "private_key": st.secrets["firebase"]["private_key"].replace('\\n', '\n'),
-            "client_email": st.secrets["firebase"]["client_email"],
-            "client_id": st.secrets["firebase"]["client_id"],
-            "auth_uri": st.secrets["firebase"]["auth_uri"],
-            "token_uri": st.secrets["firebase"]["token_uri"]
-        }
-        cred = credentials.Certificate(firebase_config)
-    except:
-        # Fallback to local file for development
-        cred = credentials.Certificate("firebase-credentials.json")
-    
-    firebase_admin.initialize_app(cred)
-    db = firestore.client()
-else:
-    db = firestore.client()
+try:
+    import firebase_admin
+    from firebase_admin import credentials, firestore
+    FIREBASE_AVAILABLE = True
+except ImportError:
+    FIREBASE_AVAILABLE = False
 
 # ================================================================
 # OPTIMIZED IMPORTS - Handle BERT gracefully
@@ -67,6 +47,9 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+# ================================================================
+# CUSTOM CSS
+# ================================================================
 st.markdown("""
 <style>
 .main-header {
@@ -78,6 +61,7 @@ st.markdown("""
     background: linear-gradient(135deg, #ff4444, #cc0000);
     color: white; padding: 15px 20px; border-radius: 10px;
     font-size: 1.1em; font-weight: bold;
+    animation: pulse 2s infinite;
 }
 .real-alert {
     background: linear-gradient(135deg, #00cc66, #008844);
@@ -153,6 +137,16 @@ st.markdown("""
     margin-bottom: 10px;
     animation: pulse 2s infinite;
 }
+.local-badge {
+    background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+    color: white;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 0.9em;
+    font-weight: bold;
+    display: inline-block;
+    margin-bottom: 10px;
+}
 @keyframes pulse {
     0% { opacity: 1; }
     50% { opacity: 0.8; }
@@ -175,167 +169,47 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown(
-    '<div class="main-header">'
-    "<h1>🚨 AI Fake Disaster Tweet Detector <span class='realtime-badge'>🔴 REAL-TIME</span></h1>"
-    "<p>Live database - Data persists across sessions and updates in real-time</p>"
-    "</div>",
-    unsafe_allow_html=True,
-)
-
 # ================================================================
-# REAL-TIME DATA MANAGEMENT
+# FIREBASE INITIALIZATION (with graceful fallback)
 # ================================================================
 
-class RealtimeDataManager:
-    """Manages real-time data synchronization with Firebase"""
+def initialize_firebase():
+    """Initialize Firebase with fallback to local mode"""
+    if not FIREBASE_AVAILABLE:
+        return None, False
     
-    def __init__(self):
-        self.db = db
-        self.analyses_collection = "tweet_analyses"
-        self.stats_collection = "system_stats"
-        self.alerts_collection = "active_alerts"
-        
-    def save_analysis(self, analysis_data):
-        """Save analysis to Firebase in real-time"""
+    if not firebase_admin._apps:
         try:
-            doc_ref = self.db.collection(self.analyses_collection).document()
-            analysis_data["timestamp"] = firestore.SERVER_TIMESTAMP
-            analysis_data["id"] = doc_ref.id
-            doc_ref.set(analysis_data)
-            
-            # Update real-time stats
-            self.update_stats(analysis_data)
-            
-            # Check if this is a high-confidence fake news alert
-            if analysis_data.get("is_fake") and analysis_data.get("confidence", 0) > 0.8:
-                self.create_alert(analysis_data)
-                
-            return doc_ref.id
+            # Try to get credentials from Streamlit secrets
+            if "firebase" in st.secrets:
+                firebase_config = {
+                    "type": st.secrets["firebase"]["type"],
+                    "project_id": st.secrets["firebase"]["project_id"],
+                    "private_key_id": st.secrets["firebase"]["private_key_id"],
+                    "private_key": st.secrets["firebase"]["private_key"].replace('\\n', '\n'),
+                    "client_email": st.secrets["firebase"]["client_email"],
+                    "client_id": st.secrets["firebase"]["client_id"],
+                    "auth_uri": st.secrets["firebase"]["auth_uri"],
+                    "token_uri": st.secrets["firebase"]["token_uri"]
+                }
+                cred = credentials.Certificate(firebase_config)
+                firebase_admin.initialize_app(cred)
+                db = firestore.client()
+                return db, True
+            else:
+                st.sidebar.info("ℹ️ No Firebase credentials - running in local mode")
+                return None, False
         except Exception as e:
-            st.error(f"Error saving to real-time database: {e}")
-            return None
-    
-    def update_stats(self, analysis_data):
-        """Update real-time statistics"""
-        try:
-            stats_ref = self.db.collection(self.stats_collection).document("live_stats")
-            
-            # Use transaction for atomic updates
-            @firestore.transactional
-            def update_in_transaction(transaction, stats_ref):
-                snapshot = stats_ref.get(transaction=transaction)
-                if snapshot.exists:
-                    stats = snapshot.to_dict()
-                else:
-                    stats = {
-                        "total_analyses": 0,
-                        "total_fake": 0,
-                        "total_real": 0,
-                        "locations": {},
-                        "disaster_types": {},
-                        "models_used": {},
-                        "last_24h": []
-                    }
-                
-                # Update counters
-                stats["total_analyses"] += 1
-                if analysis_data.get("is_fake"):
-                    stats["total_fake"] += 1
-                else:
-                    stats["total_real"] += 1
-                
-                # Update location stats
-                if analysis_data.get("location"):
-                    loc = analysis_data["location"]
-                    stats["locations"][loc] = stats["locations"].get(loc, 0) + 1
-                
-                # Update disaster types
-                for disaster in analysis_data.get("detected_disasters", []):
-                    stats["disaster_types"][disaster] = stats["disaster_types"].get(disaster, 0) + 1
-                
-                # Update model usage
-                model = analysis_data.get("model_used", "unknown")
-                stats["models_used"][model] = stats["models_used"].get(model, 0) + 1
-                
-                # Keep last 24h rolling
-                stats["last_24h"].append({
-                    "timestamp": datetime.now().isoformat(),
-                    "is_fake": analysis_data.get("is_fake")
-                })
-                if len(stats["last_24h"]) > 1000:
-                    stats["last_24h"] = stats["last_24h"][-1000:]
-                
-                transaction.set(stats_ref, stats)
-                return stats
-            
-            transaction = self.db.transaction()
-            return update_in_transaction(transaction, stats_ref)
-        except Exception as e:
-            print(f"Error updating stats: {e}")
-    
-    def create_alert(self, analysis_data):
-        """Create real-time alert for high-confidence fake news"""
-        try:
-            alert_ref = self.db.collection(self.alerts_collection).document()
-            alert_data = {
-                "tweet": analysis_data.get("tweet", "")[:100],
-                "location": analysis_data.get("location", "Unknown"),
-                "confidence": analysis_data.get("confidence", 0),
-                "timestamp": firestore.SERVER_TIMESTAMP,
-                "status": "active",
-                "id": alert_ref.id
-            }
-            alert_ref.set(alert_data)
-        except Exception as e:
-            print(f"Error creating alert: {e}")
-    
-    def get_live_analyses(self, limit=50):
-        """Get latest analyses in real-time"""
-        try:
-            analyses = self.db.collection(self.analyses_collection)\
-                .order_by("timestamp", direction=firestore.Query.DESCENDING)\
-                .limit(limit)\
-                .stream()
-            return [doc.to_dict() for doc in analyses]
-        except Exception as e:
-            st.error(f"Error fetching live data: {e}")
-            return []
-    
-    def get_live_stats(self):
-        """Get real-time statistics"""
-        try:
-            stats_ref = self.db.collection(self.stats_collection).document("live_stats")
-            stats = stats_ref.get()
-            return stats.to_dict() if stats.exists else {}
-        except Exception as e:
-            return {}
-    
-    def get_active_alerts(self):
-        """Get active fake news alerts"""
-        try:
-            alerts = self.db.collection(self.alerts_collection)\
-                .where("status", "==", "active")\
-                .order_by("timestamp", direction=firestore.Query.DESCENDING)\
-                .limit(10)\
-                .stream()
-            return [doc.to_dict() for doc in alerts]
-        except Exception as e:
-            return []
-    
-    def resolve_alert(self, alert_id):
-        """Mark alert as resolved"""
-        try:
-            self.db.collection(self.alerts_collection).document(alert_id)\
-                .update({"status": "resolved", "resolved_at": firestore.SERVER_TIMESTAMP})
-        except Exception as e:
-            print(f"Error resolving alert: {e}")
+            st.sidebar.warning(f"⚠️ Firebase connection failed: {str(e)[:50]}")
+            return None, False
+    else:
+        return firestore.client(), True
 
-# Initialize real-time manager
-rt_manager = RealtimeDataManager()
+# Initialize Firebase
+db, FIREBASE_ACTIVE = initialize_firebase()
 
 # ================================================================
-# SESSION STATE (Now syncs with Firebase)
+# SESSION STATE INITIALIZATION
 # ================================================================
 if "session_id" not in st.session_state:
     st.session_state["session_id"] = hashlib.md5(str(time.time()).encode()).hexdigest()[:8]
@@ -347,9 +221,34 @@ if "last_refresh" not in st.session_state:
     st.session_state["last_refresh"] = time.time()
 if "auto_refresh" not in st.session_state:
     st.session_state["auto_refresh"] = True
+if "local_analyses" not in st.session_state:
+    st.session_state["local_analyses"] = []
+if "local_stats" not in st.session_state:
+    st.session_state["local_stats"] = {
+        "total_analyses": 0,
+        "total_fake": 0,
+        "total_real": 0,
+        "locations": {},
+        "disaster_types": {},
+        "models_used": {}
+    }
 
 # ================================================================
-# CONSTANTS (Keep all your existing constants)
+# HEADER
+# ================================================================
+badge_class = "realtime-badge" if FIREBASE_ACTIVE else "local-badge"
+badge_text = "🔴 REAL-TIME" if FIREBASE_ACTIVE else "⚫ LOCAL MODE"
+
+st.markdown(
+    f'<div class="main-header">'
+    f"<h1>🚨 AI Fake Disaster Tweet Detector <span class='{badge_class}'>{badge_text}</span></h1>"
+    f"<p>{'Live database - Data persists across sessions' if FIREBASE_ACTIVE else 'Local mode - Data lost on refresh'}</p>"
+    f"</div>",
+    unsafe_allow_html=True,
+)
+
+# ================================================================
+# CONSTANTS
 # ================================================================
 MALAYSIA_LOCATIONS = [
     'Kampar', 'Ipoh', 'Kuala Lumpur', 'KL', 'Penang', 'Pulau Pinang',
@@ -386,11 +285,12 @@ REAL_PATTERNS = {
 }
 
 # ================================================================
-# BERT MODEL LOADING (Keep your existing BERT loading code)
+# BERT MODEL LOADING
 # ================================================================
 
 @st.cache_resource(show_spinner="Loading BERT model...")
 def load_bert_model():
+    """Load BERT model with graceful fallback"""
     if not BERT_AVAILABLE:
         return None, None, False
     try:
@@ -404,7 +304,186 @@ def load_bert_model():
 bert_model, bert_tokenizer, bert_loaded = load_bert_model() if BERT_AVAILABLE else (None, None, False)
 
 # ================================================================
-# ANALYSIS FUNCTIONS (Keep all your existing analysis functions)
+# REAL-TIME DATA MANAGER
+# ================================================================
+
+class RealtimeDataManager:
+    """Manages real-time data synchronization with Firebase or local storage"""
+    
+    def __init__(self, db, firebase_active):
+        self.db = db
+        self.firebase_active = firebase_active
+        self.analyses_collection = "tweet_analyses"
+        self.stats_collection = "system_stats"
+        self.alerts_collection = "active_alerts"
+        
+    def save_analysis(self, analysis_data):
+        """Save analysis to Firebase if available, otherwise store locally"""
+        if not self.firebase_active:
+            # Store in session state as fallback
+            st.session_state["local_analyses"].append(analysis_data)
+            
+            # Update local stats
+            stats = st.session_state["local_stats"]
+            stats["total_analyses"] += 1
+            if analysis_data.get("is_fake"):
+                stats["total_fake"] += 1
+            else:
+                stats["total_real"] += 1
+            
+            if analysis_data.get("location"):
+                loc = analysis_data["location"]
+                stats["locations"][loc] = stats["locations"].get(loc, 0) + 1
+            
+            for disaster in analysis_data.get("detected_disasters", []):
+                stats["disaster_types"][disaster] = stats["disaster_types"].get(disaster, 0) + 1
+            
+            model = analysis_data.get("model_used", "unknown")
+            stats["models_used"][model] = stats["models_used"].get(model, 0) + 1
+            
+            return "local"
+        
+        try:
+            doc_ref = self.db.collection(self.analyses_collection).document()
+            analysis_data["timestamp"] = firestore.SERVER_TIMESTAMP
+            analysis_data["id"] = doc_ref.id
+            doc_ref.set(analysis_data)
+            
+            self.update_stats(analysis_data)
+            
+            if analysis_data.get("is_fake") and analysis_data.get("confidence", 0) > 0.8:
+                self.create_alert(analysis_data)
+                
+            return doc_ref.id
+        except Exception as e:
+            st.error(f"Firebase error: {e}")
+            return None
+    
+    def update_stats(self, analysis_data):
+        """Update real-time statistics"""
+        try:
+            stats_ref = self.db.collection(self.stats_collection).document("live_stats")
+            
+            @firestore.transactional
+            def update_in_transaction(transaction, stats_ref):
+                snapshot = stats_ref.get(transaction=transaction)
+                if snapshot.exists:
+                    stats = snapshot.to_dict()
+                else:
+                    stats = {
+                        "total_analyses": 0,
+                        "total_fake": 0,
+                        "total_real": 0,
+                        "locations": {},
+                        "disaster_types": {},
+                        "models_used": {},
+                        "last_24h": []
+                    }
+                
+                stats["total_analyses"] += 1
+                if analysis_data.get("is_fake"):
+                    stats["total_fake"] += 1
+                else:
+                    stats["total_real"] += 1
+                
+                if analysis_data.get("location"):
+                    loc = analysis_data["location"]
+                    stats["locations"][loc] = stats["locations"].get(loc, 0) + 1
+                
+                for disaster in analysis_data.get("detected_disasters", []):
+                    stats["disaster_types"][disaster] = stats["disaster_types"].get(disaster, 0) + 1
+                
+                model = analysis_data.get("model_used", "unknown")
+                stats["models_used"][model] = stats["models_used"].get(model, 0) + 1
+                
+                stats["last_24h"].append({
+                    "timestamp": datetime.now().isoformat(),
+                    "is_fake": analysis_data.get("is_fake")
+                })
+                if len(stats["last_24h"]) > 1000:
+                    stats["last_24h"] = stats["last_24h"][-1000:]
+                
+                transaction.set(stats_ref, stats)
+                return stats
+            
+            transaction = self.db.transaction()
+            update_in_transaction(transaction, stats_ref)
+        except Exception as e:
+            print(f"Error updating stats: {e}")
+    
+    def create_alert(self, analysis_data):
+        """Create real-time alert for high-confidence fake news"""
+        try:
+            alert_ref = self.db.collection(self.alerts_collection).document()
+            alert_data = {
+                "tweet": analysis_data.get("tweet", "")[:100],
+                "location": analysis_data.get("location", "Unknown"),
+                "confidence": analysis_data.get("confidence", 0),
+                "timestamp": firestore.SERVER_TIMESTAMP,
+                "status": "active",
+                "id": alert_ref.id
+            }
+            alert_ref.set(alert_data)
+        except Exception as e:
+            print(f"Error creating alert: {e}")
+    
+    def get_live_analyses(self, limit=50):
+        """Get latest analyses from Firebase or local storage"""
+        if not self.firebase_active:
+            return st.session_state["local_analyses"][-limit:]
+        
+        try:
+            analyses = self.db.collection(self.analyses_collection)\
+                .order_by("timestamp", direction=firestore.Query.DESCENDING)\
+                .limit(limit)\
+                .stream()
+            return [doc.to_dict() for doc in analyses]
+        except Exception as e:
+            return st.session_state["local_analyses"][-limit:]
+    
+    def get_live_stats(self):
+        """Get real-time statistics"""
+        if not self.firebase_active:
+            return st.session_state["local_stats"]
+        
+        try:
+            stats_ref = self.db.collection(self.stats_collection).document("live_stats")
+            stats = stats_ref.get()
+            return stats.to_dict() if stats.exists else {}
+        except Exception as e:
+            return st.session_state["local_stats"]
+    
+    def get_active_alerts(self):
+        """Get active fake news alerts"""
+        if not self.firebase_active:
+            return []
+        
+        try:
+            alerts = self.db.collection(self.alerts_collection)\
+                .where("status", "==", "active")\
+                .order_by("timestamp", direction=firestore.Query.DESCENDING)\
+                .limit(10)\
+                .stream()
+            return [doc.to_dict() for doc in alerts]
+        except Exception as e:
+            return []
+    
+    def resolve_alert(self, alert_id):
+        """Mark alert as resolved"""
+        if not self.firebase_active:
+            return
+        
+        try:
+            self.db.collection(self.alerts_collection).document(alert_id)\
+                .update({"status": "resolved", "resolved_at": firestore.SERVER_TIMESTAMP})
+        except Exception as e:
+            print(f"Error resolving alert: {e}")
+
+# Initialize real-time manager
+rt_manager = RealtimeDataManager(db, FIREBASE_ACTIVE)
+
+# ================================================================
+# ANALYSIS FUNCTIONS
 # ================================================================
 
 def analyze_mock(text):
@@ -513,6 +592,7 @@ def analyze_mock(text):
     }
 
 def analyze_bert(text):
+    """BERT analysis with enhanced measurements"""
     if not bert_loaded or bert_model is None:
         return None
     
@@ -558,10 +638,9 @@ def analyze_bert(text):
         return None
 
 def analyze_hybrid(text):
+    """Hybrid analysis combining BERT and Mock"""
     mock_result = analyze_mock(text)
     bert_result = analyze_bert(text) if bert_loaded else None
-    
-    start_time = time.time()
     
     if bert_result:
         fake_prob = (bert_result["fake_probability"] * 0.6 + 
@@ -593,17 +672,137 @@ def analyze_hybrid(text):
         result = mock_result
         result["model"] = "Mock Only (BERT unavailable)"
         result["model_used"] = "Mock Only"
-        result["response_time"] = mock_result["response_time"]
     
-    result["total_processing_time"] = time.time() - start_time
     return result
 
 # ================================================================
-# REAL-TIME UI COMPONENTS
+# DISPLAY FUNCTIONS
 # ================================================================
 
+def display_probability_bar(fake_prob, real_prob):
+    """Display visual probability bar"""
+    fake_percent = fake_prob * 100
+    real_percent = real_prob * 100
+    
+    st.markdown(f"""
+    <div style="margin: 20px 0;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+            <span style="color: #ff4444; font-weight: bold;">FAKE: {fake_percent:.1f}%</span>
+            <span style="color: #00cc66; font-weight: bold;">REAL: {real_percent:.1f}%</span>
+        </div>
+        <div class="probability-bar">
+            <div class="fake-bar" style="width: {fake_percent}%;">
+                {fake_percent:.1f}%
+            </div>
+            <div class="real-bar" style="width: {real_percent}%;">
+                {real_percent:.1f}%
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+def display_comprehensive_metrics(analysis):
+    """Display all analysis metrics"""
+    
+    st.markdown("### 📊 Comprehensive Analysis Metrics")
+    
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.markdown(f"""
+        <div class="metric-card">
+            <h4>Fake Probability</h4>
+            <h2 style="color: {'#ff4444' if analysis['fake_probability'] > 0.5 else '#888'}">
+                {analysis['fake_probability']*100:.1f}%
+            </h2>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown(f"""
+        <div class="metric-card">
+            <h4>Real Probability</h4>
+            <h2 style="color: {'#00cc66' if analysis['real_probability'] > 0.5 else '#888'}">
+                {analysis['real_probability']*100:.1f}%
+            </h2>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown(f"""
+        <div class="metric-card">
+            <h4>Decision</h4>
+            <h2>{'❌ FAKE' if analysis['is_fake'] else '✅ REAL'}</h2>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    st.markdown("### 🎯 Confidence Analysis")
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        conf = analysis.get('overall_confidence', analysis.get('combined_confidence', 0.5))
+        st.metric("Overall Confidence", f"{conf*100:.1f}%")
+    
+    with col2:
+        if 'model_agreement' in analysis:
+            st.metric("Model Agreement", f"{analysis['model_agreement']*100:.1f}%")
+    
+    with col3:
+        if 'entropy' in analysis:
+            st.metric("Uncertainty", f"{analysis['entropy']:.3f}")
+    
+    with col4:
+        st.metric("Response Time", f"{analysis.get('response_time', 0)*1000:.0f}ms")
+    
+    st.markdown("### 📝 Text Analysis")
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.metric("Words", analysis.get('word_count', 0))
+        st.metric("Unique Words", analysis.get('unique_words', 0))
+    
+    with col2:
+        st.metric("Sentences", analysis.get('sentence_count', 0))
+        st.metric("Avg Word Length", f"{analysis.get('avg_word_length', 0):.1f}")
+    
+    with col3:
+        st.metric("Readability", f"{analysis.get('readability', 0):.0f}")
+        st.metric("Caps Ratio", f"{analysis.get('caps_ratio', 0)*100:.0f}%")
+    
+    with col4:
+        st.metric("Exclamation", analysis.get('exclamation_count', 0))
+        st.metric("Questions", analysis.get('question_count', 0))
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("#### 🚨 Fake News Indicators")
+        if analysis.get('fake_details'):
+            for category, count in analysis['fake_details'].items():
+                if count > 0:
+                    st.warning(f"**{category.title()}**: {count} indicators")
+    
+    with col2:
+        st.markdown("#### ✅ Real News Indicators")
+        if analysis.get('real_details'):
+            for category, count in analysis['real_details'].items():
+                if count > 0:
+                    st.success(f"**{category.title()}**: {count} indicators")
+    
+    if analysis.get('detected_disasters'):
+        st.markdown("#### 🌪️ Detected Disaster Types")
+        cols = st.columns(len(analysis['detected_disasters']))
+        for i, disaster in enumerate(analysis['detected_disasters']):
+            with cols[i]:
+                st.info(disaster.upper())
+    
+    if analysis.get('has_url'):
+        st.info("🔗 Contains reference link")
+    
+    if analysis.get('number_count', 0) > 0:
+        st.info(f"🔢 Contains {analysis['number_count']} numbers")
+
 def display_live_stats():
-    """Display real-time statistics from Firebase"""
+    """Display real-time statistics"""
     
     stats = rt_manager.get_live_stats()
     
@@ -620,26 +819,25 @@ def display_live_stats():
     with col3:
         st.metric("Real News", stats.get("total_real", 0))
     with col4:
-        if stats.get("last_24h"):
+        if "last_24h" in stats and stats["last_24h"]:
             last_hour = sum(1 for x in stats["last_24h"] 
-                          if (datetime.now() - datetime.fromisoformat(x["timestamp"])).seconds < 3600)
+                          if (datetime.now() - datetime.fromisoformat(x["timestamp"])).total_seconds() < 3600)
             st.metric("Last Hour", last_hour)
     
-    # Location heatmap if we have data
     if stats.get("locations"):
-        st.subheader("📍 Live Location Heatmap")
+        st.subheader("📍 Location Heatmap")
         loc_df = pd.DataFrame([
             {"Location": loc, "Count": count}
             for loc, count in stats["locations"].items()
         ]).sort_values("Count", ascending=False).head(10)
         
         fig = px.bar(loc_df, x="Location", y="Count", 
-                     title="Top 10 Locations with Activity",
+                     title="Top 10 Locations",
                      color="Count", color_continuous_scale="reds")
         st.plotly_chart(fig, use_container_width=True)
 
 def display_live_alerts():
-    """Display real-time alerts for high-confidence fake news"""
+    """Display real-time alerts"""
     
     alerts = rt_manager.get_active_alerts()
     
@@ -667,16 +865,20 @@ def display_live_feed():
     if analyses:
         st.markdown("### 📡 Live Analysis Feed")
         
-        # Create DataFrame for display
         feed_data = []
         for a in analyses:
             timestamp = a.get("timestamp", "")
             if hasattr(timestamp, "strftime"):
                 timestamp = timestamp.strftime("%H:%M:%S")
+            elif isinstance(timestamp, str):
+                try:
+                    timestamp = datetime.fromisoformat(timestamp).strftime("%H:%M:%S")
+                except:
+                    timestamp = timestamp[:8]
             
             feed_data.append({
                 "Time": timestamp,
-                "Tweet": a.get("tweet", "")[:50] + "...",
+                "Tweet": a.get("tweet_preview", a.get("tweet", "")[:50] + "..."),
                 "Fake %": f"{a.get('fake_probability', 0)*100:.1f}%",
                 "Location": a.get("location", "Unknown"),
                 "Status": "❌ FAKE" if a.get("is_fake") else "✅ REAL",
@@ -686,19 +888,72 @@ def display_live_feed():
         df = pd.DataFrame(feed_data)
         st.dataframe(df, use_container_width=True, height=300)
 
+def create_location_map(location, lat, lon, is_fake):
+    """Create a location map"""
+    fig = go.Figure()
+    
+    fig.add_trace(go.Scattermapbox(
+        lat=[lat],
+        lon=[lon],
+        mode='markers+text',
+        marker=dict(
+            size=20,
+            color='red' if is_fake else 'green',
+            symbol='marker'
+        ),
+        text=[location],
+        textposition="top center"
+    ))
+    
+    radius_km = 5
+    radius_deg = radius_km / 111.0
+    circle_points = 50
+    circle_lats = [lat + radius_deg * math.cos(2 * math.pi * i / circle_points) 
+                  for i in range(circle_points + 1)]
+    circle_lons = [lon + radius_deg * math.sin(2 * math.pi * i / circle_points) 
+                  for i in range(circle_points + 1)]
+    
+    fig.add_trace(go.Scattermapbox(
+        lat=circle_lats,
+        lon=circle_lons,
+        mode='lines',
+        line=dict(width=2, color='red' if is_fake else 'green'),
+        name='5km Radius'
+    ))
+    
+    fig.update_layout(
+        mapbox=dict(
+            style="open-street-map",
+            center=dict(lat=lat, lon=lon),
+            zoom=10
+        ),
+        height=400,
+        margin={"r": 0, "t": 0, "l": 0, "b": 0}
+    )
+    
+    return fig
+
 # ================================================================
-# SIDEBAR WITH REAL-TIME STATS
+# SIDEBAR
 # ================================================================
 with st.sidebar:
     st.header("⚙️ Configuration")
     
-    # Live connection status
-    st.markdown("""
-    <div style="background-color: #28a74520; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
-        <span class="live-indicator"></span> <strong>LIVE CONNECTION</strong><br>
-        <small>Data syncs in real-time</small>
-    </div>
-    """, unsafe_allow_html=True)
+    # Connection status
+    if FIREBASE_ACTIVE:
+        st.markdown("""
+        <div style="background-color: #28a74520; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
+            <span class="live-indicator"></span> <strong>LIVE CONNECTION</strong><br>
+            <small>Data syncs globally</small>
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        st.markdown("""
+        <div style="background-color: #ffc10720; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
+            <strong>⚠️ LOCAL MODE</strong><br>
+            <small>Data lost on refresh</small>
+        </div>
+        """, unsafe_allow_html=True)
     
     # Model status
     st.subheader("📊 Model Status")
@@ -715,7 +970,6 @@ with st.sidebar:
     st.session_state["auto_refresh"] = st.checkbox("🔄 Auto-refresh", value=True)
     
     if st.session_state["auto_refresh"]:
-        # Check if we need to refresh (every 5 seconds)
         if time.time() - st.session_state["last_refresh"] > 5:
             st.session_state["last_refresh"] = time.time()
             st.rerun()
@@ -739,20 +993,19 @@ with st.sidebar:
     
     st.markdown("---")
     
-    # Real-time Stats
+    # Live Stats
     st.subheader("📈 Live Global Stats")
     display_live_stats()
     
-    # Session info
     st.markdown("---")
     st.caption(f"Session ID: `{st.session_state['session_id']}`")
-    st.caption(f"Last Refresh: {datetime.now().strftime('%H:%M:%S')}")
+    st.caption(f"Mode: {'🌐 Real-time' if FIREBASE_ACTIVE else '💻 Local'}")
 
 # ================================================================
 # MAIN UI
 # ================================================================
 
-# Show active model
+# Active model display
 model_display = {
     "hybrid": "🤖 Hybrid (BERT + Mock)",
     "bert": "🧠 BERT Only",
@@ -768,7 +1021,6 @@ badge_class = {
 st.markdown(f"""
 <div style="margin-bottom: 20px;">
     <span class="model-badge {badge_class}">Active: {model_display}</span>
-    <span style="margin-left: 10px;">🔄 Real-time data shared globally</span>
 </div>
 """, unsafe_allow_html=True)
 
@@ -779,7 +1031,6 @@ display_live_alerts()
 # INPUT SECTION
 # ================================================================
 
-# Create columns for input and clear button
 input_col1, input_col2 = st.columns([6, 1])
 
 with input_col1:
@@ -837,28 +1088,26 @@ with col2:
         st.rerun()
 
 # ================================================================
-# ANALYSIS EXECUTION (Now saves to Firebase)
+# ANALYSIS EXECUTION
 # ================================================================
 
 if analyze_clicked and tweet:
     with st.spinner("Analyzing and broadcasting to live feed..."):
-        # Choose analysis method
+        
         if st.session_state["model_choice"] == "bert" and bert_loaded:
             result = analyze_bert(tweet)
         elif st.session_state["model_choice"] == "mock":
             result = analyze_mock(tweet)
-        else:  # hybrid
+        else:
             result = analyze_hybrid(tweet)
         
         if result:
-            # Extract location
             location = None
             for loc in MALAYSIA_LOCATIONS:
                 if loc.lower() in tweet.lower():
                     location = loc
                     break
             
-            # Prepare data for Firebase
             analysis_data = {
                 "tweet": tweet,
                 "tweet_preview": tweet[:100] + "..." if len(tweet) > 100 else tweet,
@@ -873,13 +1122,13 @@ if analyze_clicked and tweet:
                 "session_id": st.session_state["session_id"]
             }
             
-            # Save to Firebase
             doc_id = rt_manager.save_analysis(analysis_data)
             
-            if doc_id:
-                st.success(f"✅ Analysis saved to live feed! ID: {doc_id[:8]}")
+            if doc_id and FIREBASE_ACTIVE:
+                st.success(f"✅ Analysis saved to global feed! ID: {doc_id[:8]}")
+            else:
+                st.success("✅ Analysis saved locally")
             
-            # Display results
             st.markdown("---")
             
             if result["is_fake"]:
@@ -895,27 +1144,38 @@ if analyze_clicked and tweet:
                     unsafe_allow_html=True
                 )
             
-            # Display comprehensive metrics (use your existing display function)
-            # ... (I'll keep your existing display_comprehensive_metrics function)
+            display_probability_bar(result["fake_probability"], result["real_probability"])
+            display_comprehensive_metrics(result)
             
             if location:
                 st.info(f"📍 Location detected: {location}")
+                
+                try:
+                    url = f"https://nominatim.openstreetmap.org/search?q={urllib.parse.quote(location)}&format=json&limit=1"
+                    headers = {'User-Agent': 'Disaster-Detector/1.0'}
+                    response = requests.get(url, headers=headers, timeout=5)
+                    data = response.json()
+                    
+                    if data:
+                        lat, lon = float(data[0]['lat']), float(data[0]['lon'])
+                        st.subheader("📍 Location Map")
+                        fig = create_location_map(location, lat, lon, result["is_fake"])
+                        st.plotly_chart(fig, use_container_width=True)
+                except Exception as e:
+                    st.warning(f"Could not load map for {location}")
             
             st.info(f"🤖 Model: {result.get('model_used', 'Unknown')}")
-            
+
 elif analyze_clicked and not tweet:
     st.warning("⚠️ Please enter a tweet to analyze.")
 
 # ================================================================
-# LIVE FEED SECTION
+# LIVE FEED
 # ================================================================
 st.markdown("---")
 st.subheader("📡 Global Live Feed")
-
-# Display live feed
 display_live_feed()
 
-# Manual refresh button
 if st.button("🔄 Refresh Live Feed", use_container_width=True):
     st.rerun()
 
@@ -924,11 +1184,11 @@ if st.button("🔄 Refresh Live Feed", use_container_width=True):
 # ================================================================
 st.markdown("---")
 st.markdown(
-    "<div style='text-align:center;color:#888;'>"
-    "🚀 REAL-TIME AI Fake Disaster Tweet Detector | "
-    "<span class='live-indicator'></span> LIVE DATABASE - Data persists globally<br>"
+    f"<div style='text-align:center;color:#888;'>"
+    f"🚀 {'REAL-TIME' if FIREBASE_ACTIVE else 'LOCAL'} AI Fake Disaster Tweet Detector | "
+    f"{'🌐 Data shared globally' if FIREBASE_ACTIVE else '💻 Data stored locally'}<br>"
     f"Session: {st.session_state['session_id']} | "
     f"Last sync: {datetime.now().strftime('%H:%M:%S')}"
-    "</div>",
+    f"</div>",
     unsafe_allow_html=True
 )
